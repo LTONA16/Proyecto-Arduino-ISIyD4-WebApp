@@ -1,0 +1,28 @@
+body {
+    background: #004990;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to bottom, #004990, #0375e4);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to bottom, #004990, #0375e4); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.cookie-regular {
+    font-family: "Cookie", cursive;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 5rem;
+}
+
+.animacion1 {
+    transition: transform 0.3s ease;
+}
+
+.animacion1:hover {
+    transform: scale(1.05); /* Escala un 5% al hacer hover */
+}
+
+.animacion2 {
+    transition: transform 0.2s ease;
+}
+
+.animacion2:hover {
+    transform: scale(1.02); /* Escala un 5% al hacer hover */
+}
