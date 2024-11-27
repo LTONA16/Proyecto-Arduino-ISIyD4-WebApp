@@ -3,10 +3,8 @@ package com.unison.cuidadohayunmeteoritoisi.controladores;
 import com.fazecast.jSerialComm.SerialPort;
 import com.unison.cuidadohayunmeteoritoisi.modelos.ArduinoAlarma;
 import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoAlarmaRepositorio;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,17 +12,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Controller
-@RequestMapping("/arduinoAlarma/*")
-public class ArduinoAlarmaControlador{
+@RequestMapping("/alarma/*")
+public class AlarmaControlador {
 
     @Autowired
     private ArduinoAlarmaRepositorio arAlarmaRep;
+    //private SerialPort arPort;
 
-    private SerialPort arPort;
-
+/*
     // Configura el puerto serial al iniciar la aplicación
 
     //@PostConstruct
@@ -101,7 +98,6 @@ public class ArduinoAlarmaControlador{
         }
     }
 
-    */
 
 
     // Metodo programado que se ejecuta cada 5 segundos para leer datos del puerto serial
@@ -181,7 +177,7 @@ public class ArduinoAlarmaControlador{
             e.printStackTrace();
         }
     }
-
+*/
     // devuelve el último dato
     @GetMapping("/estado")
     @ResponseBody

@@ -1,8 +1,5 @@
 package com.unison.cuidadohayunmeteoritoisi;
 
-import com.unison.cuidadohayunmeteoritoisi.controladores.ArduinoAlarmaControlador;
-import com.unison.cuidadohayunmeteoritoisi.controladores.ArduinoControlador;
-import com.unison.cuidadohayunmeteoritoisi.controladores.ArduinoHumedadControlador;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;

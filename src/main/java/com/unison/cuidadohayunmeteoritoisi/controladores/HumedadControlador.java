@@ -17,14 +17,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
-@RequestMapping("/arduinoHumedad")
-public class ArduinoHumedadControlador{
+@RequestMapping("/humedad/*")
+public class HumedadControlador {
 
     @Autowired
-    private ArduinoHumedadRepositorio arduinoHumedadRepositorio;
+    private ArduinoHumedadRepositorio humedadRep;
 
-    private SerialPort arPort;
-
+    /*private SerialPort arPort;
 
     // Configura el puerto serial al iniciar la aplicación
 
@@ -45,7 +44,7 @@ public class ArduinoHumedadControlador{
     }
 
 
-    /*
+
     @Scheduled(fixedRate = 5000)
     public void guardarDatosArduino(){
         onDataReceived();
@@ -79,7 +78,7 @@ public class ArduinoHumedadControlador{
             System.err.println("Formato inválido: " + data);
         }
     }
-    */
+
 
     // Método programado que se ejecuta cada 5 segundos para leer datos del puerto serial
     @Scheduled(fixedRate = 5000)
@@ -108,15 +107,15 @@ public class ArduinoHumedadControlador{
                         try {
                             // Asignamos correctamente los valores:
                             // Primero la temperatura y luego la humedad
-                            double temperatura = Double.parseDouble(valores[0]);
+                            //double temperatura = Double.parseDouble(valores[0]);
                             double humedad = Double.parseDouble(valores[1]);
 
                             // Guardar en la base de datos
                             ArduinoHumedad lectura = new ArduinoHumedad();
                             lectura.setHumedad(humedad);
-                            lectura.setTemperatura(temperatura);
+                            //lectura.setTemperatura(temperatura);
                             lectura.setFecha(LocalDateTime.now());
-                            arduinoHumedadRepositorio.save(lectura);
+                            humedadRep.save(lectura);
                             System.out.println("Datos guardados en la base de datos");
                         } catch (NumberFormatException e) {
                             System.err.println("Error al parsear los valores: " + e.getMessage());
@@ -133,12 +132,13 @@ public class ArduinoHumedadControlador{
             e.printStackTrace();
         }
     }
+*/
 
     // devuelve los últimos 20 datos en formato JSON
     @GetMapping("/datos")
     @ResponseBody
     public List<ArduinoHumedad> obtenerDatosHumedad() {
-        return arduinoHumedadRepositorio.findTop20ByOrderByFechaDesc().stream().toList(); // Devuelve los últimos 20 registros
+        return humedadRep.findTop20ByOrderByFechaDesc().stream().toList(); // Devuelve los últimos 20 registros
     }
 
 
@@ -147,6 +147,6 @@ public class ArduinoHumedadControlador{
     public String mostrarDatosHumedad(Model model) {
         List<ArduinoHumedad> datosHumedad = obtenerDatosHumedad();
         model.addAttribute("datosHumedad", datosHumedad); // Obtén los datos más recientes
-        return "arduinoHumedad";
+        return "humedad";
     }
 }
