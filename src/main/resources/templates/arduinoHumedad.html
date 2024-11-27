@@ -1,10 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Carga el archivo de estilos Bootstrap para el diseño atractivo y responsivo -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Carga Chart.js para graficar los datos de humedad y temperatura en tiempo real -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
-    <title>Arduino Humedad</title>
+    <title>Temperatura y Humedad en Tiempo Real</title>
 </head>
 <body>
-    <h1>Arduino Humedad</h1>
+<!-- Contenedor principal de la página con margen y diseño centrado -->
+<div class="container my-5">
+    <!-- Título centrado de la página -->
+    <h1 class="text-center mb-4">Temperatura y Humedad</h1>
+
+    <!-- Tabla para mostrar los datos históricos de humedad y temperatura -->
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <!-- Encabezados de las columnas -->
+            <th>ID</th>
+            <th>Temperatura (°C)</th>
+            <th>Humedad (%)</th>
+            <th>Fecha</th>
+        </tr>
+        </thead>
+        <tbody id="tabla-temperatura">
+        <!-- Los datos se agregarán dinámicamente aquí con JavaScript -->
+        </tbody>
+    </table>
+
+    <!-- Sección para el gráfico de humedad y temperatura -->
+    <canvas id="temperatureChart" width="400" height="200"></canvas>
+</div>
+
+<!-- Script para manejar la lógica del gráfico y los datos en tiempo real -->
+<script>
+    const ctx = document.getElementById('temperatureChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Temperatura (°C)',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true
+                },
+                {
+                    label: 'Humedad (%)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Tiempo' } },
+                y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
+            }
+        }
+    });
+
+    async function fetchHumedadData() {
+        try {
+            const response = await fetch('/arduino/arduinoHumedad/datos');
+            if (!response.ok) {
+                throw new Error('Error al obtener los datos');
+            }
+            const data = await response.json();
+            const tabla = document.getElementById('tabla-temperatura');
+            tabla.innerHTML = '';
+
+            data.forEach(d => {
+                const fila = `<tr>
+                    <td>${d.id}</td>
+                    <td>${d.temperatura}</td>
+                    <td>${d.humedad}</td>
+                    <td>${d.fecha}</td>
+                </tr>`;
+                tabla.innerHTML += fila;
+            });
+
+            const lastData = data[data.length - 1];
+            const now = new Date().toLocaleTimeString();
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(lastData.temperatura);
+            chart.data.datasets[1].data.push(lastData.humedad);
+
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+
+            chart.update();
+        } catch (error) {
+            console.error('Error al obtener los datos:', error);
+        }
+    }
+
+    fetchHumedadData();
+    setInterval(fetchHumedadData, 2000);
+</script>
 </body>
 </html>
