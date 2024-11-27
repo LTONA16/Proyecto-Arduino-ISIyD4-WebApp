@@ -1,5 +1,6 @@
 package com.unison.cuidadohayunmeteoritoisi.modelos;
 
+import jakarta.persistence.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -23,6 +24,7 @@ public class ArduinoAlarma implements Serializable {
     private static final long serialVersionUID = 3660617525846421889L;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
@@ -36,4 +38,38 @@ public class ArduinoAlarma implements Serializable {
 
     @NotNull
     private LocalDateTime fecha;
+
+    public void setActiva(boolean activa) {
+        this.activa = activa;
+    }
+
+    public boolean isActiva() {
+        return activa;
+    }
+
+    public void setSonando(boolean sonando) {
+        this.sonando = sonando;
+    }
+
+    public boolean isSonando() {
+        return activa;
+    }
+
+    // Getter y Setter para 'proximidad'
+    public double getProximidad() {
+        return proximidad;
+    }
+
+    public void setProximidad(double proximidad) {
+        this.proximidad = proximidad;
+    }
+
+    // Getter y Setter para 'fecha'
+    public LocalDateTime getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDateTime fecha) {
+        this.fecha = fecha;
+    }
 }

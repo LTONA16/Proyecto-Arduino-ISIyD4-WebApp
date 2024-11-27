@@ -1,115 +1,257 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
+
 <head>
-    <!-- Carga el archivo de estilos Bootstrap para el diseño atractivo y responsivo -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Carga Chart.js para graficar los datos de humedad y temperatura en tiempo real -->
+    <!-- Carga el archivo de estilos Tailwind para el diseño atractivo y responsivo -->
+    <link th:href="@{/styles/output.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://kit.fontawesome.com/ec46b80c81.css" crossorigin="anonymous" />
+
+    <!-- Carga la fuente de texto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap"
+            rel="stylesheet" />
+
+    <!-- Carga Chart.js para graficar los datos de Humedad en tiempo real -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta charset="UTF-8">
-    <title>Temperatura y Humedad en Tiempo Real</title>
+    <meta charset="UTF-8" />
+    <title>Humedad</title>
 </head>
-<body>
-<!-- Contenedor principal de la página con margen y diseño centrado -->
-<div class="container my-5">
-    <!-- Título centrado de la página -->
-    <h1 class="text-center mb-4">Temperatura y Humedad</h1>
 
-    <!-- Tabla para mostrar los datos históricos de humedad y temperatura -->
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <!-- Encabezados de las columnas -->
-            <th>ID</th>
-            <th>Temperatura (°C)</th>
-            <th>Humedad (%)</th>
-            <th>Fecha</th>
-        </tr>
-        </thead>
-        <tbody id="tabla-temperatura">
-        <!-- Los datos se agregarán dinámicamente aquí con JavaScript -->
-        </tbody>
-    </table>
+<!-- Agregamos padding al body y declaramos la fuente del texto -->
 
-    <!-- Sección para el gráfico de humedad y temperatura -->
-    <canvas id="temperatureChart" width="400" height="200"></canvas>
-</div>
+<body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
+<!-- Contenedor principal de la página con diseño centrado -->
+<div class="items-center h-full">
+    <div class="items-center h-full">
+        <header class="p-6 flex space-x-2 items-center w-full justify-between bg-bkg-mid">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-cloud text-xl"></i>
+                <p style="font-family: Quicksand" class="font-semibold text-xl">
+                    SensorISI
+                </p>
+            </div>
+            <div class="flex space-x-4">
+                <!--<a th:href="@{../../arduino}">Inicio</a>-->
+                <a href="index.html">Inicio</a>
+                <a href="humedad.html" class="underline underline-offset-8">Humedad</a>
+                <a href="temperatura.html">Temperatura</a>
+            </div>
+        </header>
 
-<!-- Script para manejar la lógica del gráfico y los datos en tiempo real -->
-<script>
-    const ctx = document.getElementById('temperatureChart').getContext('2d');
-    const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                {
-                    label: 'Temperatura (°C)',
-                    data: [],
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                    fill: true
+        <!-- Banner -->
+        <div class="bg-bkg-light p-4 mt-6 mb-0 mx-6 rounded-xl justify-between border-l-4 border-bkg-red flex" id="banner">
+            <div class="flex items-center space-x-4">
+                <i class="fa-solid fa-circle-exclamation text-bkg-red text-2xl"></i>
+                <div>
+                    <h2 class="text-bkg-red text-lg font-semibold">Alerta</h2>
+                    <p>Hay un objeto muy cerca.</p>
+                </div>
+            </div>
+            <button class="p-2" id="close_banner">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Título centrado de la página -->
+        <div class="p-6 relative flex flex-row items-center justify-between">
+            <div>
+                <h1 class="py-2 font-semibold text-3xl">Humedad</h1>
+                <p class="text-light">Monitorea la humedad en tiempo real</p>
+            </div>
+            <button class="bg-bkg-primary py-2 px-4 border-2 border-light-border rounded-xl w-fit h-fit" id="filter_button">
+                <i class="fa-regular fa-filter"></i>
+                <span>Filtros</span>
+            </button>
+            <div class="absolute hidden -bottom-[52px] left-6 items-center" id="filters">
+                <div class="relative">
+                    <label for="date">Fecha: </label>
+                    <input type="date" name="date" id="date"
+                           class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
+                    <div class="absolute inset-y-0 left-[12.5rem] flex items-center pl-3 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20"
+                             fill="currentColor">
+                            <path
+                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 00-2 0v1H7V3a1 1 0 00-1-1zM4 8h12v9H4V8z" />
+                        </svg>
+                    </div>
+                </div>
+                <button class="border border-light-border rounded-xl p-2">
+                    Aplicar
+                </button>
+            </div>
+        </div>
+
+        <!-- Sección de KPIs-->
+        <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-8" id="KPIs">
+            <!-- KPI Temp Máx-->
+            <div class="flex bg-bkg-light border-2 border-border rounded-xl flex-row gap-4 items-center p-3">
+                <div class="bg-orange-primary rounded-full py-2 px-4 text-bkg-primary">
+                    <i class="fa-regular fa-droplet-percent"></i>
+                </div>
+                <p>Humedad Máx:</p>
+                <p>40%</p>
+            </div>
+
+            <!-- KPI Temp Min-->
+            <div class="flex bg-bkg-light border-2 border-border rounded-xl flex-row gap-4 items-center p-3">
+                <div class="bg-blue-primary rounded-full py-2 px-4 text-bkg-primary">
+                    <i class="fa-sharp fa-regular fa-droplet"></i>
+                </div>
+                <p>Humedad Mín:</p>
+                <p>20 %</p>
+            </div>
+
+            <!-- KPI Temp Promedio-->
+            <div class="flex bg-bkg-light border-2 border-border rounded-xl flex-row gap-4 items-center p-3">
+                <div class="bg-pink-primary rounded-full py-2 px-4 text-bkg-primary">
+                    <i class="fa-sharp fa-regular fa-badge-percent"></i>
+                </div>
+                <p>Humedad Promedio:</p>
+                <p>35%</p>
+            </div>
+
+            <!-- KPI Desviación Estándar-->
+            <div class="flex bg-bkg-light border-2 border-border rounded-xl flex-row gap-4 items-center p-3">
+                <div class="bg-yellow-primary rounded-full py-2 px-4 text-bkg-primary">
+                    <i class="fa-regular fa-calculator"></i>
+                </div>
+                <p>Desviación Estándar:</p>
+                <p>5%</p>
+            </div>
+        </div>
+
+        <!-- Contenedor de tabla y gráfica -->
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 h-full gap-x-8">
+            <!-- Tabla -->
+            <div class="text-center overflow-hidden">
+                <div class="grid grid-cols-2 border border-t-2 border-x-2 border-light-border rounded-t-2xl p-2 bg-bkg-light">
+                    <span class="font-bold">Timestamp</span>
+                    <span class="font-bold">Humedad</span>
+                </div>
+                <div th:each="humedad : ${datosHumedad}">
+                    <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
+                        <span th:text="${humedad.fecha}">26/11/2024 12:00:00</span>
+                        <span th:text="${humedad.humedad + '%'} ">6%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfica -->
+            <div class="bg-bkg-light rounded-2xl">
+                <canvas id="temperatureChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <script>
+            const filters = document.getElementById("filters");
+            const date = document.getElementById("date");
+            const filter_button = document.getElementById("filter_button");
+            const KPIs = document.getElementById("KPIs");
+            const banner = document.getElementById("banner");
+            const close_banner = document.getElementById("close_banner");
+
+            const ctx = document.getElementById('temperatureChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: [],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            fill: true
+                        },
+                        {
+                            label: 'Humedad (%)',
+                            data: [],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true
+                        }
+                    ]
                 },
-                {
-                    label: 'Humedad (%)',
-                    data: [],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: true
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo' } },
+                        y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
+                    }
                 }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' }
-            },
-            scales: {
-                x: { title: { display: true, text: 'Tiempo' } },
-                y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
-            }
-        }
-    });
+            });
 
-    async function fetchHumedadData() {
-        try {
-            const response = await fetch('/arduino/arduinoHumedad/datos');
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos');
-            }
-            const data = await response.json();
-            const tabla = document.getElementById('tabla-temperatura');
-            tabla.innerHTML = '';
+            async function fetchHumedadData() {
+                try {
+                    const response = await fetch('/arduino/arduinoHumedad/datos');
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los datos');
+                    }
+                    const data = await response.json();
+                    const tabla = document.getElementById('tabla-temperatura');
+                    tabla.innerHTML = '';
 
-            data.forEach(d => {
-                const fila = `<tr>
+                    data.forEach(d => {
+                        const fila = `<tr>
                     <td>${d.id}</td>
                     <td>${d.temperatura}</td>
                     <td>${d.humedad}</td>
                     <td>${d.fecha}</td>
                 </tr>`;
-                tabla.innerHTML += fila;
-            });
+                        tabla.innerHTML += fila;
+                    });
 
-            const lastData = data[data.length - 1];
-            const now = new Date().toLocaleTimeString();
-            chart.data.labels.push(now);
-            chart.data.datasets[0].data.push(lastData.temperatura);
-            chart.data.datasets[1].data.push(lastData.humedad);
+                    const lastData = data[data.length - 1];
+                    const now = new Date().toLocaleTimeString();
+                    chart.data.labels.push(now);
+                    chart.data.datasets[0].data.push(lastData.temperatura);
+                    chart.data.datasets[1].data.push(lastData.humedad);
 
-            if (chart.data.labels.length > 20) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-                chart.data.datasets[1].data.shift();
+                    if (chart.data.labels.length > 20) {
+                        chart.data.labels.shift();
+                        chart.data.datasets[0].data.shift();
+                        chart.data.datasets[1].data.shift();
+                    }
+
+                    chart.update();
+                } catch (error) {
+                    console.error('Error al obtener los datos:', error);
+                }
             }
 
-            chart.update();
-        } catch (error) {
-            console.error('Error al obtener los datos:', error);
-        }
-    }
+            fetchHumedadData();
+            setInterval(fetchHumedadData, 5000);
 
-    fetchHumedadData();
-    setInterval(fetchHumedadData, 2000);
-</script>
+
+            function toggle() {
+                if (filters.classList.contains("hidden")) {
+                    filters.classList.remove("hidden");
+                    filters.classList.add("flex");
+                    KPIs.classList.remove("pt-8");
+                    KPIs.classList.add("pt-20");
+                } else {
+                    filters.classList.remove("flex");
+                    filters.classList.add("hidden");
+                    KPIs.classList.remove("pt-20");
+                    KPIs.classList.add("pt-8");
+                }
+            }
+
+            function remove_banner() {
+                banner.classList.remove("flex");
+                banner.classList.add("hidden");
+            }
+
+            filter_button.addEventListener("click", toggle);
+            close_banner.addEventListener("click", remove_banner);
+        </script>
+    </footer>
 </body>
+
 </html>

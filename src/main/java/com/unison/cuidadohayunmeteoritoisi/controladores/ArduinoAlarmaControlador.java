@@ -2,7 +2,6 @@ package com.unison.cuidadohayunmeteoritoisi.controladores;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.unison.cuidadohayunmeteoritoisi.modelos.ArduinoAlarma;
-import com.unison.cuidadohayunmeteoritoisi.modelos.ArduinoHumedad;
 import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoAlarmaRepositorio;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -19,7 +18,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/arduinoAlarma/*")
-public class ArduinoAlarmaControlador {
+public class ArduinoAlarmaControlador{
 
     @Autowired
     private ArduinoAlarmaRepositorio arAlarmaRep;
@@ -27,17 +26,13 @@ public class ArduinoAlarmaControlador {
     private SerialPort arPort;
 
     // Configura el puerto serial al iniciar la aplicación
-    @PostConstruct
+
+    //@PostConstruct
     public void configurarPuerto() {
         arPort = SerialPort.getCommPort("COM6");
         arPort.setComPortParameters(9600, 8, 1, SerialPort.NO_PARITY);
         arPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
 
-        if (arPort.openPort()) {
-            System.out.println("Puerto serial abierto exitosamente.");
-        } else {
-            System.err.println("No se pudo abrir el puerto serial.");
-        }
     }
 
     // Cierra el puerto serial al detener la aplicación
@@ -50,8 +45,67 @@ public class ArduinoAlarmaControlador {
     }
 
 
-    // Método programado que se ejecuta cada 2 segundos para leer datos del puerto serial
-    @Scheduled(fixedRate = 2000)
+
+    /*
+    @Override
+    public void onDataReceived(String data) {
+        // Lógica adicional para procesar los datos
+        System.out.println("Datos recibidos (Alarma) : " + data);
+
+        // Verifica el formato de los datos (Array[2]: proximidad)
+        String[] valores = data.split(",");
+        if (valores.length >= 2) {
+            try {
+                // Guardar valor de proximidad y crear variables de activa y sonando
+                double proximidad = 0;
+                boolean activa = false;
+                boolean sonando = false;
+                ArduinoAlarma nuevaLectura = new ArduinoAlarma();
+
+                if(valores[2].equals("Error")){
+                    System.err.println("Error en el sensor de proximidad");
+                    return;
+                } else {
+                    proximidad = Double.parseDouble(valores[2].trim());
+                    System.out.println("Sensor de proximidad activo, su valor es: " + proximidad);
+                    if (proximidad > 0 && proximidad <= 60) {
+                        System.out.println("Alerta: La alarma sera activada...");
+                        // Asignar valores a las variables
+                        activa = true;
+                        sonando = true;
+                        nuevaLectura.setActiva(activa);
+                        nuevaLectura.setSonando(sonando);
+                        nuevaLectura.setProximidad(proximidad);
+                        nuevaLectura.setFecha(LocalDateTime.now());
+
+                    }else if(proximidad > 60){
+                        System.out.println("La alarma esta desactivada");
+                        // Asignar valores a las variables
+                        activa = false;
+                        sonando = false;
+                        //nuevaLectura = new ArduinoAlarma(null, activa, sonando, proximidad, LocalDateTime.now());
+                        nuevaLectura.setActiva(activa);
+                        nuevaLectura.setSonando(sonando);
+                        nuevaLectura.setProximidad(proximidad);
+                        nuevaLectura.setFecha(LocalDateTime.now());
+                    }
+                }
+                // Guardar en la base de datos
+                arAlarmaRep.save(nuevaLectura);
+                System.out.println("Datos de alarma guardados en la base de datos");
+            } catch (NumberFormatException e) {
+                System.err.println("Error al parsear los valores: " + e.getMessage());
+            }
+        } else {
+            System.err.println("Formato inválido: " + data);
+        }
+    }
+
+    */
+
+
+    // Metodo programado que se ejecuta cada 5 segundos para leer datos del puerto serial
+    //@Scheduled(fixedRate = 5000)
     public void leerYGuardarDatos() {
         // Verifica si el puerto está abierto antes de leer
         if (!arPort.isOpen()) {
@@ -69,7 +123,7 @@ public class ArduinoAlarmaControlador {
 
                 if (bytesRead > 0) {
                     String data = new String(buffer).trim();
-                    System.out.println("Datos recibidos: " + data);
+                    System.out.println("Datos recibidos (Alarma) : " + data);
 
                     // Verifica el formato de los datos (Array[2]: proximidad)
                     String[] valores = data.split(",");
@@ -92,19 +146,26 @@ public class ArduinoAlarmaControlador {
                                     // Asignar valores a las variables
                                     activa = true;
                                     sonando = true;
-                                    nuevaLectura = new ArduinoAlarma(null, activa, sonando, proximidad, LocalDateTime.now());
+                                    nuevaLectura.setActiva(activa);
+                                    nuevaLectura.setSonando(sonando);
+                                    nuevaLectura.setProximidad(proximidad);
+                                    nuevaLectura.setFecha(LocalDateTime.now());
 
                                 }else if(proximidad > 60){
                                     System.out.println("La alarma esta desactivada");
                                     // Asignar valores a las variables
-                                    activa = true;
-                                    sonando = true;
-                                    nuevaLectura = new ArduinoAlarma(null, activa, sonando, proximidad, LocalDateTime.now());
+                                    activa = false;
+                                    sonando = false;
+                                    //nuevaLectura = new ArduinoAlarma(null, activa, sonando, proximidad, LocalDateTime.now());
+                                    nuevaLectura.setActiva(activa);
+                                    nuevaLectura.setSonando(sonando);
+                                    nuevaLectura.setProximidad(proximidad);
+                                    nuevaLectura.setFecha(LocalDateTime.now());
                                 }
                             }
                             // Guardar en la base de datos
                             arAlarmaRep.save(nuevaLectura);
-                            System.out.println("Datos de alarma guardados en la base de datos: " + nuevaLectura);
+                            System.out.println("Datos de alarma guardados en la base de datos");
                         } catch (NumberFormatException e) {
                             System.err.println("Error al parsear los valores: " + e.getMessage());
                         }
@@ -124,8 +185,9 @@ public class ArduinoAlarmaControlador {
     // devuelve el último dato
     @GetMapping("/estado")
     @ResponseBody
-    public ArduinoAlarma obtenerEstadoAlarma() {
-        return arAlarmaRep.findTop1ByOrderByFechaDesc(); // Último registro
+    public void obtenerEstadoAlarma(Model modelo) {
+        modelo.addAttribute("alarma", arAlarmaRep.findTop1ByOrderByFechaDesc());
+        System.out.println(arAlarmaRep.findTop1ByOrderByFechaDesc());
     }
 
 }

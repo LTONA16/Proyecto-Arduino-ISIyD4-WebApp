@@ -47,7 +47,7 @@ public class ArduinoHumedad implements Serializable {
         return humedad;
     }
 
-    public void setHumedad(@NotNull long humedad) {
+    public void setHumedad(@NotNull double humedad) {
         this.humedad = humedad;
     }
 
@@ -56,7 +56,7 @@ public class ArduinoHumedad implements Serializable {
         return temperatura;
     }
 
-    public void setTemperatura(@NotNull long temperatura) {
+    public void setTemperatura(@NotNull double temperatura) {
         this.temperatura = temperatura;
     }
 

@@ -18,25 +18,21 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/arduinoHumedad")
-public class ArduinoHumedadControlador {
+public class ArduinoHumedadControlador{
 
     @Autowired
     private ArduinoHumedadRepositorio arduinoHumedadRepositorio;
 
     private SerialPort arPort;
 
+
     // Configura el puerto serial al iniciar la aplicación
+
     @PostConstruct
     public void configurarPuerto() {
         arPort = SerialPort.getCommPort("COM6"); // Cambiar "COM6" al puerto correcto
         arPort.setComPortParameters(9600, 8, 1, SerialPort.NO_PARITY);
         arPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
-
-        if (arPort.openPort()) {
-            System.out.println("Puerto serial abierto exitosamente.");
-        } else {
-            System.err.println("No se pudo abrir el puerto serial.");
-        }
     }
 
     // Cierra el puerto serial al detener la aplicación
@@ -49,8 +45,44 @@ public class ArduinoHumedadControlador {
     }
 
 
-    // Método programado que se ejecuta cada 2 segundos para leer datos del puerto serial
-    @Scheduled(fixedRate = 2000)
+    /*
+    @Scheduled(fixedRate = 5000)
+    public void guardarDatosArduino(){
+        onDataReceived();
+    }
+
+
+    @Override
+    public void onDataReceived(String data) {
+        System.out.println("Datos recibidos (Humedad): " + data);
+
+        // Verifica el formato de los datos (espera temperatura, humedad y un valor extra)
+        String[] valores = data.split(",");
+        if (valores.length >= 2) { // Asegura que haya al menos dos valores
+            try {
+                // Asignamos correctamente los valores:
+                // Primero la temperatura y luego la humedad
+                double temperatura = Double.parseDouble(valores[1]);  // Humedad -> temperatura
+                double humedad = Double.parseDouble(valores[0]);  // Temperatura -> humedad
+
+                // Guardar en la base de datos
+                ArduinoHumedad lectura = new ArduinoHumedad();
+                lectura.setHumedad(humedad);
+                lectura.setTemperatura(temperatura);
+                lectura.setFecha(LocalDateTime.now());
+                arduinoHumedadRepositorio.save(lectura);
+                System.out.println("Datos guardados en la base de datos");
+            } catch (NumberFormatException e) {
+                System.err.println("Error al parsear los valores: " + e.getMessage());
+            }
+        } else {
+            System.err.println("Formato inválido: " + data);
+        }
+    }
+    */
+
+    // Método programado que se ejecuta cada 5 segundos para leer datos del puerto serial
+    @Scheduled(fixedRate = 5000)
     public void leerYGuardarDatos() {
         // Verifica si el puerto está abierto antes de leer
         if (!arPort.isOpen()) {
@@ -68,7 +100,7 @@ public class ArduinoHumedadControlador {
 
                 if (bytesRead > 0) {
                     String data = new String(buffer).trim();
-                    System.out.println("Datos recibidos: " + data);
+                    System.out.println("Datos recibidos (Humedad): " + data);
 
                     // Verifica el formato de los datos (espera temperatura, humedad y un valor extra)
                     String[] valores = data.split(",");
@@ -76,13 +108,16 @@ public class ArduinoHumedadControlador {
                         try {
                             // Asignamos correctamente los valores:
                             // Primero la temperatura y luego la humedad
-                            double temperatura = Double.parseDouble(valores[1].trim());  // Humedad -> temperatura
-                            double humedad = Double.parseDouble(valores[0].trim());  // Temperatura -> humedad
+                            double temperatura = Double.parseDouble(valores[0]);
+                            double humedad = Double.parseDouble(valores[1]);
 
                             // Guardar en la base de datos
-                            ArduinoHumedad lectura = new ArduinoHumedad(null, temperatura, humedad, LocalDateTime.now());
+                            ArduinoHumedad lectura = new ArduinoHumedad();
+                            lectura.setHumedad(humedad);
+                            lectura.setTemperatura(temperatura);
+                            lectura.setFecha(LocalDateTime.now());
                             arduinoHumedadRepositorio.save(lectura);
-                            System.out.println("Datos guardados en la base de datos: " + lectura);
+                            System.out.println("Datos guardados en la base de datos");
                         } catch (NumberFormatException e) {
                             System.err.println("Error al parsear los valores: " + e.getMessage());
                         }
@@ -103,14 +138,15 @@ public class ArduinoHumedadControlador {
     @GetMapping("/datos")
     @ResponseBody
     public List<ArduinoHumedad> obtenerDatosHumedad() {
-        return arduinoHumedadRepositorio.findTop20ByOrderByFechaDesc(); // Devuelve los últimos 20 registros
+        return arduinoHumedadRepositorio.findTop20ByOrderByFechaDesc().stream().toList(); // Devuelve los últimos 20 registros
     }
 
 
     // Muestra la página de humedad y temperatura con los datos cargados
-    @GetMapping("/*")
+    @RequestMapping("/*")
     public String mostrarDatosHumedad(Model model) {
-        model.addAttribute("datosHumedad", arduinoHumedadRepositorio.findTop20ByOrderByFechaDesc()); // Obtén los datos más recientes
-        return "arduinoHumedad"; // Asegúrate de que el nombre de la vista coincida con el archivo HTML
+        List<ArduinoHumedad> datosHumedad = obtenerDatosHumedad();
+        model.addAttribute("datosHumedad", datosHumedad); // Obtén los datos más recientes
+        return "arduinoHumedad";
     }
 }
