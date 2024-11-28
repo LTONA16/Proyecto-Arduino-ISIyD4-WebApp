@@ -65,18 +65,27 @@
                 <span>Filtros</span>
             </button>
             <div class="absolute hidden -bottom-[52px] left-6 items-center" id="filters">
-                <div class="relative">
-                    <label for="date">Fecha: </label>
-                    <input type="date" name="date" id="date"
-                           class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
-                    <div class="absolute inset-y-0 left-[12.5rem] flex items-center pl-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20"
-                             fill="currentColor">
-                            <path
-                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 00-2 0v1H7V3a1 1 0 00-1-1zM4 8h12v9H4V8z" />
-                        </svg>
+                <div class="relative flex flex-col space-y-2">
+                    <div>
+                        <label for="date">Fecha: </label>
+                        <input type="date" name="date" id="date"
+                               class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
                     </div>
+                    <div>
+                        <label for="start-time">Hora inicial: </label>
+                        <input type="time" name="start-time" id="start-time"
+                               class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
+                    </div>
+                    <div>
+                        <label for="end-time">Hora final: </label>
+                        <input type="time" name="end-time" id="end-time"
+                               class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
+                    </div>
+                    <button class="border border-light-border rounded-xl p-2">
+                        Aplicar
+                    </button>
                 </div>
+            </div>
                 <button class="border border-light-border rounded-xl p-2">
                     Aplicar
                 </button>

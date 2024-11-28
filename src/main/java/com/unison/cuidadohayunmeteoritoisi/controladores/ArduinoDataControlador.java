@@ -20,7 +20,9 @@ public class ArduinoDataControlador {
 
     @Autowired
     private ArduinoAlarmaRepositorio arAlarmaRep;
+    @Autowired
     private ArduinoHumedadRepositorio humedadRep;
+    @Autowired
     private ArduinoTemperaturaRepositorio temperaturaRep;
 
     String puerto = "COM6";
@@ -54,17 +56,14 @@ public class ArduinoDataControlador {
             System.err.println("Puerto serial no disponible. Puerto seleccionado: " + puerto);
         } else if (arPort.openPort()) {
             System.out.println("Puerto serial abierto.");
-            leerYGuardarDatosAlarma();
-            leerYGuardarDatosHumedad();
-            leerYGuardarDatosTemperatura();
+            leerYGuardarDatosTodo();
         } else {
             System.err.println("Error al abrir el puerto serial. Puerto seleccionado: " + puerto);
         }
 
     }
 
-    public void leerYGuardarDatosAlarma() {
-
+    public void leerYGuardarDatosTodo() {
         try {
             // Si hay datos disponibles para leer, los procesamos
             if (arPort.bytesAvailable() > 0) {
@@ -73,137 +72,55 @@ public class ArduinoDataControlador {
 
                 if (bytesRead > 0) {
                     String data = new String(buffer).trim();
-                    System.out.println("Datos recibidos (Alarma) : " + data);
+                    System.out.println("Datos recibidos: " + data);
 
-                    // Verifica el formato de los datos (Array[2]: proximidad)
+                    // Verifica el formato de los datos
                     String[] valores = data.split(",");
-                    if (valores.length >= 2) {
-                        try {
-                            // Guardar valor de proximidad y crear variables de activa y sonando
-                            double proximidad = 0;
-                            boolean activa = false;
-                            boolean sonando = false;
-                            ArduinoAlarma nuevaLectura = new ArduinoAlarma();
+                    if (valores.length >= 3) { // Asegura que haya al menos tres valores (uno para cada sensor)
+                        // Procesar datos de cada sensor
+                        double proximidad = 0, humedad = 0, temperatura = 0;
+                        boolean alarmaActiva = false, alarmaSonando = false;
 
-                            if(valores[2].equals("Error")){
-                                System.err.println("Error en el sensor de proximidad");
-                                return;
-                            } else {
+                        try {
+                            // Procesar los datos de la alarma (proximidad)
+                            if (valores.length >= 3 && !valores[2].equals("Error")) {
                                 proximidad = Double.parseDouble(valores[2].trim());
-                                System.out.println("Sensor de proximidad activo, su valor es: " + proximidad);
-                                if (proximidad > 0 && proximidad <= 60) {
-                                    System.out.println("Alerta: La alarma sera activada...");
-                                    // Asignar valores a las variables
-                                    activa = true;
-                                    sonando = true;
-                                    nuevaLectura.setActiva(activa);
-                                    nuevaLectura.setSonando(sonando);
-                                    nuevaLectura.setProximidad(proximidad);
-                                    nuevaLectura.setFecha(LocalDateTime.now());
-
-                                }else if(proximidad > 60){
-                                    System.out.println("La alarma esta desactivada");
-                                    // Asignar valores a las variables
-                                    activa = false;
-                                    sonando = false;
-                                    //nuevaLectura = new ArduinoAlarma(null, activa, sonando, proximidad, LocalDateTime.now());
-                                    nuevaLectura.setActiva(activa);
-                                    nuevaLectura.setSonando(sonando);
-                                    nuevaLectura.setProximidad(proximidad);
-                                    nuevaLectura.setFecha(LocalDateTime.now());
-                                }
+                                alarmaActiva = proximidad > 0 && proximidad <= 60;
+                                alarmaSonando = alarmaActiva;
                             }
-                            // Guardar en la base de datos
-                            arAlarmaRep.save(nuevaLectura);
-                            System.out.println("Datos de alarma guardados en la base de datos");
-                        } catch (NumberFormatException e) {
-                            System.err.println("Error al parsear los valores: " + e.getMessage());
-                        }
-                    } else {
-                        System.err.println("Formato inválido: " + data);
-                    }
-                }
-            } else {
-                System.out.println("No hay datos disponibles en el puerto.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al leer el puerto serial: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
-    public void leerYGuardarDatosHumedad() {
+                            // Procesar los datos de humedad
+                            if (valores.length >= 2) {
+                                humedad = Double.parseDouble(valores[1].trim());
+                            }
 
-        try {
-            // Si hay datos disponibles para leer, los procesamos
-            if (arPort.bytesAvailable() > 0) {
-                byte[] buffer = new byte[arPort.bytesAvailable()];
-                int bytesRead = arPort.readBytes(buffer, buffer.length);
+                            // Procesar los datos de temperatura
+                            if (valores.length >= 1) {
+                                temperatura = Double.parseDouble(valores[0].trim());
+                            }
 
-                if (bytesRead > 0) {
-                    String data = new String(buffer).trim();
-                    System.out.println("Datos recibidos (Humedad): " + data);
+                            // Crear y guardar las lecturas de cada sensor
+                            // Guardar alarma
+                            ArduinoAlarma nuevaAlarma = new ArduinoAlarma();
+                            nuevaAlarma.setProximidad(proximidad);
+                            nuevaAlarma.setActiva(alarmaActiva);
+                            nuevaAlarma.setSonando(alarmaSonando);
+                            nuevaAlarma.setFecha(LocalDateTime.now());
+                            arAlarmaRep.save(nuevaAlarma);
 
-                    // Verifica el formato de los datos (espera temperatura, humedad y un valor extra)
-                    String[] valores = data.split(",");
-                    if (valores.length >= 2) { // Asegura que haya al menos dos valores
-                        try {
-                            // Asignamos correctamente los valores:
-                            // Primero la temperatura y luego la humedad
-                            //double temperatura = Double.parseDouble(valores[0]);
-                            double humedad = Double.parseDouble(valores[1]);
+                            // Guardar humedad
+                            ArduinoHumedad nuevaHumedad = new ArduinoHumedad();
+                            nuevaHumedad.setHumedad(humedad);
+                            nuevaHumedad.setFecha(LocalDateTime.now());
+                            humedadRep.save(nuevaHumedad);
 
-                            // Guardar en la base de datos
-                            ArduinoHumedad lectura = new ArduinoHumedad();
-                            lectura.setHumedad(humedad);
-                            //lectura.setTemperatura(temperatura);
-                            lectura.setFecha(LocalDateTime.now());
-                            humedadRep.save(lectura);
-                            System.out.println("Datos guardados en la base de datos");
-                        } catch (NumberFormatException e) {
-                            System.err.println("Error al parsear los valores: " + e.getMessage());
-                        }
-                    } else {
-                        System.err.println("Formato inválido: " + data);
-                    }
-                }
-            } else {
-                System.out.println("No hay datos disponibles en el puerto.");
-            }
-        } catch (Exception e) {
-            System.err.println("Error al leer el puerto serial: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+                            // Guardar temperatura
+                            ArduinoTemperatura nuevaTemperatura = new ArduinoTemperatura();
+                            nuevaTemperatura.setTemperatura(temperatura);
+                            nuevaTemperatura.setFecha(LocalDateTime.now());
+                            temperaturaRep.save(nuevaTemperatura);
 
-    public void leerYGuardarDatosTemperatura() {
-
-        try {
-            // Si hay datos disponibles para leer, los procesamos
-            if (arPort.bytesAvailable() > 0) {
-                byte[] buffer = new byte[arPort.bytesAvailable()];
-                int bytesRead = arPort.readBytes(buffer, buffer.length);
-
-                if (bytesRead > 0) {
-                    String data = new String(buffer).trim();
-                    System.out.println("Datos recibidos (Temperatura): " + data);
-
-                    // Verifica el formato de los datos (espera temperatura, humedad y un valor extra)
-                    String[] valores = data.split(",");
-                    if (valores.length >= 2) { // Asegura que haya al menos dos valores
-                        try {
-                            // Asignamos correctamente los valores:
-                            // Primero la temperatura y luego la humedad
-                            double temperatura = Double.parseDouble(valores[0]);
-                            //double humedad = Double.parseDouble(valores[1]);
-
-                            // Guardar en la base de datos
-                            ArduinoTemperatura lectura = new ArduinoTemperatura();
-                            //lectura.setHumedad(humedad);
-                            lectura.setTemperatura(temperatura);
-                            lectura.setFecha(LocalDateTime.now());
-                            temperaturaRep.save(lectura);
-                            System.out.println("Datos guardados en la base de datos");
+                            System.out.println("Datos de alarma, humedad y temperatura guardados en la base de datos.");
                         } catch (NumberFormatException e) {
                             System.err.println("Error al parsear los valores: " + e.getMessage());
                         }

@@ -20,20 +20,12 @@
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
 <body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
-<!-- Modal de alarma -->
-<div id="modalAlarma" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-4 border-b">
-            <h2 class="text-xl font-bold text-gray-800">¡Alarma activada!</h2>
-        </div>
-        <div class="p-4">
-            <p class="text-gray-600">La alarma está activa. Por favor, revise el sistema.</p>
-        </div>
-        <div class="p-4 border-t flex justify-end">
-            <button onclick="cerrarModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                Aceptar
-            </button>
-        </div>
+<!-- Modal -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h2>Este es un modal</h2>
+        <p>Haz clic en el botón para cerrar el modal.</p>
+        <button id="closeModalBtn">Cerrar Modal</button>
     </div>
 </div>
 <!-- Contenedor principal de la página con diseño centrado -->
@@ -114,7 +106,8 @@
         <script>
             const banner = document.getElementById("banner");
             const close_banner = document.getElementById("close_banner");
-
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modal = document.getElementById('modal');
 
             // Gráficas de temperatura y humedad
             const ctxHumedad = document.getElementById('humedadChart').getContext('2d');
@@ -227,22 +220,28 @@
             fetchTemperaturaData();
             setInterval(fetchTemperaturaData, 2000);
 
-
+            // Banners y modales
             function remove_banner() {
                 banner.classList.remove("flex");
                 banner.classList.add("hidden");
             }
 
+            function show_banner() {
+                banner.classList.remove("hidden");
+                banner.classList.add("flex");
+            }
+
             function mostrarModal() {
-                const modal = document.getElementById('modalAlarma');
-                modal.classList.remove('hidden');
+                modal.style.display = 'flex';  // Muestra el modal
+                show_banner();
             }
 
             function cerrarModal() {
-                const modal = document.getElementById('modalAlarma');
-                modal.classList.add('hidden');
+                modal.style.display = 'none';  // Oculta el modal
+                remove_banner();
             }
 
+            //Verificar el estado de la alarma
             async function verificarAlarma() {
                 try {
                     const response = await fetch('/arduino/alarma/estado');
@@ -251,6 +250,8 @@
                     // Comprueba si la alarma está activa
                     if (data && data.activa) { // Ajusta según el campo real de tu JSON
                         mostrarModal();
+                    }else{
+                        cerrarModal();
                     }
                 } catch (error) {
                     console.error('Error al obtener el estado de la alarma:', error);
@@ -259,6 +260,7 @@
 
             setInterval(verificarAlarma, 5000);
 
+            closeModalBtn.addEventListener('click', cerrarModal);
             close_banner.addEventListener("click", remove_banner);
         </script>
     </footer>
