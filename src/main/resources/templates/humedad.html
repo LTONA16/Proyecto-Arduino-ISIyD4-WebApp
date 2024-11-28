@@ -140,7 +140,7 @@
 
             <!-- Gráfica -->
             <div class="bg-bkg-light rounded-2xl">
-                <canvas id="humedadChart" width="400" height="200"></canvas>
+                <canvas id="humedadChart" width="400" height="395"></canvas>
             </div>
         </div>
     </div>
@@ -182,7 +182,7 @@
 
             async function fetchHumedadData() {
                 try {
-                    const response = await fetch('/arduino/arduinoHumedad/datos');
+                    const response = await fetch('/arduino/humedad/datos');
                     if (!response.ok) {
                         throw new Error('Error al obtener los datos');
                     }
@@ -202,13 +202,11 @@
                     const lastData = data[data.length - 1];
                     const now = new Date().toLocaleTimeString();
                     chart.data.labels.push(now);
-                    chart.data.datasets[0].data.push(lastData.temperatura);
-                    chart.data.datasets[1].data.push(lastData.humedad);
+                    chart.data.datasets[0].data.push(lastData.humedad);
 
                     if (chart.data.labels.length > 20) {
                         chart.data.labels.shift();
                         chart.data.datasets[0].data.shift();
-                        chart.data.datasets[1].data.shift();
                     }
 
                     chart.update();

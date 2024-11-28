@@ -125,65 +125,23 @@
     <div class="p-6 grid grid-cols-1 md:grid-cols-2 h-full gap-x-8">
       <!-- Tabla -->
       <div class="text-center overflow-hidden">
-        <div class="grid grid-cols-2 border border-t-2 border-x-2 border-light-border rounded-t-2xl p-2 bg-bkg-light">
-          <span class="font-bold">Timestamp</span>
-          <span class="font-bold">Temperatura</span>
-        </div>
-        <div>
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">6 °C</span>
+        <div class="text-center overflow-hidden">
+          <div class="grid grid-cols-2 border border-t-2 border-x-2 border-light-border rounded-t-2xl p-2 bg-bkg-light">
+            <span class="font-bold">Timestamp</span>
+            <span class="font-bold">Humedad</span>
           </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">6 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">8 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">8 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">9 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">9 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">9 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">10 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">10 °C</span>
-          </div>
-
-          <div class="grid grid-cols-2 border border-x-2 border-light-border p-2 rounded-b-2xl">
-            <span class="">26/11/2024 12:00:00</span>
-            <span class="">10 °C</span>
+          <div th:each="temperatura : ${datosTemperatura}">
+            <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
+              <span th:text="${temperatura.fecha}">26/11/2024 12:00:00</span>
+              <span th:text="${temperatura.temperatura + '%'} ">6%</span>
+            </div>
           </div>
         </div>
       </div>
-
       <!-- Gráfica -->
-      <div class="bg-bkg-light rounded-2xl"></div>
+      <div class="bg-bkg-light rounded-2xl">
+        <canvas id="temperaturaChart" width="400" height="395"></canvas>
+      </div>
     </div>
   </div>
   <footer>
@@ -194,6 +152,71 @@
       const KPIs = document.getElementById("KPIs");
       const banner = document.getElementById("banner");
       const close_banner = document.getElementById("close_banner");
+
+      const ctx = document.getElementById('temperaturaChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Temperatura (%)',
+              data: [],
+              borderColor: 'rgb(192,159,75)',
+              backgroundColor: 'rgba(192,151,75,0.2)',
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Tiempo' } },
+            y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
+          }
+        }
+      });
+
+      async function fetchHumedadData() {
+        try {
+          const response = await fetch('/arduino/temperatura/datos');
+          if (!response.ok) {
+            throw new Error('Error al obtener los datos');
+          }
+          const data = await response.json();
+          const tabla = document.getElementById('tabla-temperatura');
+          tabla.innerHTML = '';
+
+          data.forEach(d => {
+            const fila = `<tr>
+                    <td>${d.id}</td>
+                    <td>${d.temperatura}</td>
+                    <td>${d.fecha}</td>
+                </tr>`;
+            tabla.innerHTML += fila;
+          });
+
+          const lastData = data[data.length - 1];
+          const now = new Date().toLocaleTimeString();
+          chart.data.labels.push(now);
+          chart.data.datasets[0].data.push(lastData.temperatura);
+
+          if (chart.data.labels.length > 20) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+          }
+
+          chart.update();
+        } catch (error) {
+          console.error('Error al obtener los datos:', error);
+        }
+      }
+
+      fetchHumedadData();
+      setInterval(fetchHumedadData, 5000);
 
       function toggle() {
         if (filters.classList.contains("hidden")) {

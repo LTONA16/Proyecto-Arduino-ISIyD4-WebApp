@@ -33,7 +33,7 @@
                 </p>
             </div>
             <div class="flex space-x-4">
-                <a href="index.html" class="underline underline-offset-8">Inicio</a>
+                <a th:href="@{/}" class="underline underline-offset-8">Inicio</a>
                 <a th:href="@{/humedad/}">Humedad</a>
                 <a th:href="@{/temperatura/}">Temperatura</a>
             </div>
@@ -65,7 +65,9 @@
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 h-full gap-8">
             <!-- Gráfica Temperatura -->
             <div class="bg-bkg-light rounded-2xl p-4">
-                <div class="flex items-center justify-between">
+                <canvas id="temperaturaChart" width="400" height="250"></canvas>
+                <!-- Título y botón ver más -->
+                <div class="flex items-center justify-between p-4">
                     <h2 class="text-lg font-semibold">Temperatura</h2>
                     <a th:href="@{/temperatura/}">
                         <button
@@ -78,7 +80,8 @@
             </div>
 
             <!-- Gráfica Humedad -->
-            <div class="bg-bkg-light rounded-2xl">
+            <div class="bg-bkg-light rounded-2xl p-4">
+                <canvas id="humedadChart" width="400" height="250"></canvas>
                 <!-- Título y botón ver más -->
                 <div class="flex items-center justify-between p-4">
                     <h2 class="text-lg font-semibold">Humedad</h2>
@@ -97,6 +100,137 @@
         <script>
             const banner = document.getElementById("banner");
             const close_banner = document.getElementById("close_banner");
+
+            const ctxHumedad = document.getElementById('humedadChart').getContext('2d');
+            const chartHumedad = new Chart(ctxHumedad, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Humedad (%)',
+                            data: [],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo' } },
+                        y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            async function fetchHumedadData() {
+                try {
+                    const response = await fetch('/arduino/humedad/datos');
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los datos');
+                    }
+                    const data = await response.json();
+                    const tabla = document.getElementById('tabla-temperatura');
+                    tabla.innerHTML = '';
+
+                    data.forEach(d => {
+                        const fila = `<tr>
+                    <td>${d.id}</td>
+                    <td>${d.humedad}</td>
+                    <td>${d.fecha}</td>
+                </tr>`;
+                        tabla.innerHTML += fila;
+                    });
+
+                    const lastData = data[data.length - 1];
+                    const now = new Date().toLocaleTimeString();
+                    chartHumedad.data.labels.push(now);
+                    chartHumedad.data.datasets[0].data.push(lastData.humedad);
+
+                    if (chartHumedad.data.labels.length > 20) {
+                        chartHumedad.data.labels.shift();
+                        chartHumedad.data.datasets[0].data.shift();
+                    }
+
+                    chartHumedad.update();
+                } catch (error) {
+                    console.error('Error al obtener los datos:', error);
+                }
+            }
+
+            fetchHumedadData();
+            setInterval(fetchHumedadData, 5000);
+
+            const ctxTemp = document.getElementById('temperaturaChart').getContext('2d');
+            const chartTemp = new Chart(ctxTemp, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Temperatura (%)',
+                            data: [],
+                            borderColor: 'rgb(192,159,75)',
+                            backgroundColor: 'rgba(192,151,75,0.2)',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Tiempo' } },
+                        y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
+                    }
+                }
+            });
+
+            async function fetchTemperaturaData() {
+                try {
+                    const response = await fetch('/arduino/temperatura/datos');
+                    if (!response.ok) {
+                        throw new Error('Error al obtener los datos');
+                    }
+                    const data = await response.json();
+                    const tabla = document.getElementById('tabla-temperatura');
+                    tabla.innerHTML = '';
+
+                    data.forEach(d => {
+                        const fila = `<tr>
+                    <td>${d.id}</td>
+                    <td>${d.temperatura}</td>
+                    <td>${d.fecha}</td>
+                </tr>`;
+                        tabla.innerHTML += fila;
+                    });
+
+                    const lastData = data[data.length - 1];
+                    const now = new Date().toLocaleTimeString();
+                    chartTemp.data.labels.push(now);
+                    chartTemp.data.datasets[0].data.push(lastData.temperatura);
+
+                    if (chartTemp.data.labels.length > 20) {
+                        chartTemp.data.labels.shift();
+                        chartTemp.data.datasets[0].data.shift();
+                    }
+
+                    chartTemp.update();
+                } catch (error) {
+                    console.error('Error al obtener los datos:', error);
+                }
+            }
+
+            fetchTemperaturaData();
+            setInterval(fetchTemperaturaData, 5000);
+
 
             function remove_banner() {
                 banner.classList.remove("flex");
