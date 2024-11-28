@@ -130,10 +130,10 @@
             <span class="font-bold">Timestamp</span>
             <span class="font-bold">Humedad</span>
           </div>
-          <div th:each="temperatura : ${datosTemperatura}">
+          <div id="tabla-temperatura" >
             <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-              <span th:text="${temperatura.fecha}">26/11/2024 12:00:00</span>
-              <span th:text="${temperatura.temperatura + '%'} ">6%</span>
+              <span>26/11/2024 12:00:00</span>
+              <span>6%</span>
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@
         }
       });
 
-      async function fetchHumedadData() {
+      async function fetchTemperaturaData() {
         try {
           const response = await fetch('/arduino/temperatura/datos');
           if (!response.ok) {
@@ -188,17 +188,23 @@
           }
           const data = await response.json();
           const tabla = document.getElementById('tabla-temperatura');
-          tabla.innerHTML = '';
 
-          data.forEach(d => {
-            const fila = `<tr>
-                    <td>${d.id}</td>
-                    <td>${d.temperatura}</td>
-                    <td>${d.fecha}</td>
-                </tr>`;
-            tabla.innerHTML += fila;
+          // Limpiar contenido actual de la tabla
+          while (tabla.firstChild) {
+            tabla.removeChild(tabla.firstChild);
+          }
+
+          // Agregar nuevos datos
+          data.forEach((d) => {
+            const fila = document.createElement('div');
+            fila.className = 'grid grid-cols-2 border border-x-2 border-light-border p-2';
+            fila.innerHTML = `
+                <span>${d.fecha}</span>
+                <span>${d.temperatura}°C</span>`;
+            tabla.appendChild(fila);
           });
 
+          // Actualizar el gráfico
           const lastData = data[data.length - 1];
           const now = new Date().toLocaleTimeString();
           chart.data.labels.push(now);
@@ -215,8 +221,8 @@
         }
       }
 
-      fetchHumedadData();
-      setInterval(fetchHumedadData, 5000);
+      fetchTemperaturaData();
+      setInterval(fetchTemperaturaData, 5000);
 
       function toggle() {
         if (filters.classList.contains("hidden")) {

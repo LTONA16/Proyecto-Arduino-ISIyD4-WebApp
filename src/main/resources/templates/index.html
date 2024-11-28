@@ -102,7 +102,7 @@
             const close_banner = document.getElementById("close_banner");
 
             const ctxHumedad = document.getElementById('humedadChart').getContext('2d');
-            const chartHumedad = new Chart(ctxHumedad, {
+            const humedadChart = new Chart(ctxHumedad, {
                 type: 'line',
                 data: {
                     labels: [],
@@ -135,29 +135,19 @@
                         throw new Error('Error al obtener los datos');
                     }
                     const data = await response.json();
-                    const tabla = document.getElementById('tabla-temperatura');
-                    tabla.innerHTML = '';
 
-                    data.forEach(d => {
-                        const fila = `<tr>
-                    <td>${d.id}</td>
-                    <td>${d.humedad}</td>
-                    <td>${d.fecha}</td>
-                </tr>`;
-                        tabla.innerHTML += fila;
-                    });
-
+                    // Solo actualizar el gráfico
                     const lastData = data[data.length - 1];
                     const now = new Date().toLocaleTimeString();
-                    chartHumedad.data.labels.push(now);
-                    chartHumedad.data.datasets[0].data.push(lastData.humedad);
+                    humedadChart.data.labels.push(now);
+                    humedadChart.data.datasets[0].data.push(lastData.humedad);
 
-                    if (chartHumedad.data.labels.length > 20) {
-                        chartHumedad.data.labels.shift();
-                        chartHumedad.data.datasets[0].data.shift();
+                    if (humedadChart.data.labels.length > 20) {
+                        humedadChart.data.labels.shift();
+                        humedadChart.data.datasets[0].data.shift();
                     }
 
-                    chartHumedad.update();
+                    humedadChart.update();
                 } catch (error) {
                     console.error('Error al obtener los datos:', error);
                 }
@@ -166,14 +156,14 @@
             fetchHumedadData();
             setInterval(fetchHumedadData, 5000);
 
-            const ctxTemp = document.getElementById('temperaturaChart').getContext('2d');
-            const chartTemp = new Chart(ctxTemp, {
+            const ctxTemperatura = document.getElementById('temperaturaChart').getContext('2d');
+            const temperaturaChart = new Chart(ctxTemperatura, {
                 type: 'line',
                 data: {
                     labels: [],
                     datasets: [
                         {
-                            label: 'Temperatura (%)',
+                            label: 'Temperatura (°C)',
                             data: [],
                             borderColor: 'rgb(192,159,75)',
                             backgroundColor: 'rgba(192,151,75,0.2)',
@@ -200,29 +190,19 @@
                         throw new Error('Error al obtener los datos');
                     }
                     const data = await response.json();
-                    const tabla = document.getElementById('tabla-temperatura');
-                    tabla.innerHTML = '';
 
-                    data.forEach(d => {
-                        const fila = `<tr>
-                    <td>${d.id}</td>
-                    <td>${d.temperatura}</td>
-                    <td>${d.fecha}</td>
-                </tr>`;
-                        tabla.innerHTML += fila;
-                    });
-
+                    // Solo actualizar el gráfico
                     const lastData = data[data.length - 1];
                     const now = new Date().toLocaleTimeString();
-                    chartTemp.data.labels.push(now);
-                    chartTemp.data.datasets[0].data.push(lastData.temperatura);
+                    temperaturaChart.data.labels.push(now);
+                    temperaturaChart.data.datasets[0].data.push(lastData.temperatura);
 
-                    if (chartTemp.data.labels.length > 20) {
-                        chartTemp.data.labels.shift();
-                        chartTemp.data.datasets[0].data.shift();
+                    if (temperaturaChart.data.labels.length > 20) {
+                        temperaturaChart.data.labels.shift();
+                        temperaturaChart.data.datasets[0].data.shift();
                     }
 
-                    chartTemp.update();
+                    temperaturaChart.update();
                 } catch (error) {
                     console.error('Error al obtener los datos:', error);
                 }

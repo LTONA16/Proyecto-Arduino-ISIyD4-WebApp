@@ -130,10 +130,10 @@
                     <span class="font-bold">Timestamp</span>
                     <span class="font-bold">Humedad</span>
                 </div>
-                <div th:each="humedad : ${datosHumedad}">
+                <div id="tabla-humedad">
                     <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-                        <span th:text="${humedad.fecha}">26/11/2024 12:00:00</span>
-                        <span th:text="${humedad.humedad + '%'} ">6%</span>
+                        <span>26/11/2024 12:00:00</span>
+                        <span>6%</span>
                     </div>
                 </div>
             </div>
@@ -187,18 +187,19 @@
                         throw new Error('Error al obtener los datos');
                     }
                     const data = await response.json();
-                    const tabla = document.getElementById('tabla-temperatura');
-                    tabla.innerHTML = '';
+                    const tabla = document.getElementById('tabla-humedad');
+                    tabla.innerHTML = ''; // Limpiar contenido actual
 
-                    data.forEach(d => {
-                        const fila = `<tr>
-                    <td>${d.id}</td>
-                    <td>${d.humedad}</td>
-                    <td>${d.fecha}</td>
-                </tr>`;
-                        tabla.innerHTML += fila;
+                    data.forEach((d) => {
+                        const fila = document.createElement('div');
+                        fila.className = 'grid grid-cols-2 border border-x-2 border-light-border p-2';
+                        fila.innerHTML = `
+                <span>${d.fecha}</span>
+                <span>${d.humedad}%</span>`;
+                        tabla.appendChild(fila);
                     });
 
+                    // Actualizar el gráfico
                     const lastData = data[data.length - 1];
                     const now = new Date().toLocaleTimeString();
                     chart.data.labels.push(now);
@@ -217,7 +218,6 @@
 
             fetchHumedadData();
             setInterval(fetchHumedadData, 5000);
-
 
             function toggle() {
                 if (filters.classList.contains("hidden")) {
