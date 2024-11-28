@@ -9,6 +9,7 @@ import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoHumedadRepositori
 import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoTemperaturaRepositorio;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Controller
 public class ArduinoDataControlador {
 
+    @Autowired
     private ArduinoAlarmaRepositorio arAlarmaRep;
     private ArduinoHumedadRepositorio humedadRep;
     private ArduinoTemperaturaRepositorio temperaturaRep;
