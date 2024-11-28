@@ -5,6 +5,7 @@ import com.unison.cuidadohayunmeteoritoisi.modelos.ArduinoAlarma;
 import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoAlarmaRepositorio;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -181,9 +182,11 @@ public class AlarmaControlador {
     // devuelve el último dato
     @GetMapping("/estado")
     @ResponseBody
-    public void obtenerEstadoAlarma(Model modelo) {
-        modelo.addAttribute("alarma", arAlarmaRep.findTop1ByOrderByFechaDesc());
-        System.out.println(arAlarmaRep.findTop1ByOrderByFechaDesc());
+    public ResponseEntity<ArduinoAlarma> obtenerEstadoAlarma(Model modelo) {
+        ArduinoAlarma alarma = arAlarmaRep.findTop1ByOrderByFechaDesc();
+        modelo.addAttribute("alarma", alarma);
+        System.out.println("La alarma esta " + (alarma.isActiva() ? "activa" : "desactivada"));
+        return ResponseEntity.ok(alarma);
     }
 
 }

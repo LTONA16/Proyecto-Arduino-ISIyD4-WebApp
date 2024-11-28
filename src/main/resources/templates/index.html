@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
 <head>
     <!-- Carga el archivo de estilos Tailwind para el diseño atractivo y responsivo -->
@@ -9,9 +9,7 @@
     <!-- Carga la fuente de texto -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap"
-            rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
 
     <!-- Carga Chart.js para graficar los datos de humedad y temperatura en tiempo real -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,6 +20,22 @@
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
 <body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
+<!-- Modal de alarma -->
+<div id="modalAlarma" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
+        <div class="p-4 border-b">
+            <h2 class="text-xl font-bold text-gray-800">¡Alarma activada!</h2>
+        </div>
+        <div class="p-4">
+            <p class="text-gray-600">La alarma está activa. Por favor, revise el sistema.</p>
+        </div>
+        <div class="p-4 border-t flex justify-end">
+            <button onclick="cerrarModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Aceptar
+            </button>
+        </div>
+    </div>
+</div>
 <!-- Contenedor principal de la página con diseño centrado -->
 <div class="items-center h-full">
     <div class="items-center h-full">
@@ -101,6 +115,8 @@
             const banner = document.getElementById("banner");
             const close_banner = document.getElementById("close_banner");
 
+
+            // Gráficas de temperatura y humedad
             const ctxHumedad = document.getElementById('humedadChart').getContext('2d');
             const humedadChart = new Chart(ctxHumedad, {
                 type: 'line',
@@ -216,6 +232,32 @@
                 banner.classList.remove("flex");
                 banner.classList.add("hidden");
             }
+
+            function mostrarModal() {
+                const modal = document.getElementById('modalAlarma');
+                modal.classList.remove('hidden');
+            }
+
+            function cerrarModal() {
+                const modal = document.getElementById('modalAlarma');
+                modal.classList.add('hidden');
+            }
+
+            async function verificarAlarma() {
+                try {
+                    const response = await fetch('/arduino/alarma/estado');
+                    const data = await response.json();
+
+                    // Comprueba si la alarma está activa
+                    if (data && data.activa) { // Ajusta según el campo real de tu JSON
+                        mostrarModal();
+                    }
+                } catch (error) {
+                    console.error('Error al obtener el estado de la alarma:', error);
+                }
+            }
+
+            setInterval(verificarAlarma, 5000);
 
             close_banner.addEventListener("click", remove_banner);
         </script>
