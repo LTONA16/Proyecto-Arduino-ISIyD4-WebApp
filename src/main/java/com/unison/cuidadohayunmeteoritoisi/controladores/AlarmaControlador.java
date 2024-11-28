@@ -185,7 +185,6 @@ public class AlarmaControlador {
     public ResponseEntity<ArduinoAlarma> obtenerEstadoAlarma(Model modelo) {
         ArduinoAlarma alarma = arAlarmaRep.findTop1ByOrderByFechaDesc();
         modelo.addAttribute("alarma", alarma);
-        System.out.println("La alarma esta " + (alarma.isActiva() ? "activa" : "desactivada"));
         return ResponseEntity.ok(alarma);
     }
 

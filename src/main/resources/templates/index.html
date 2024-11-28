@@ -23,9 +23,9 @@
 <!-- Modal -->
 <div id="modal" class="modal">
     <div class="modal-content">
-        <h2>Este es un modal</h2>
-        <p>Haz clic en el botón para cerrar el modal.</p>
-        <button id="closeModalBtn">Cerrar Modal</button>
+        <h2 class="p-3 text-4xl">¡¡Alerta!!</h2>
+        <h2 class="p-4 text-2xl">¡La alarma de proximidad ha sido activada!</h2>
+        <button id="closeModalBtn" class="rounded-2xl buttonModal animacion1">Cerrar Modal</button>
     </div>
 </div>
 <!-- Contenedor principal de la página con diseño centrado -->
@@ -258,6 +258,7 @@
                 }
             }
 
+            verificarAlarma();
             setInterval(verificarAlarma, 5000);
 
             closeModalBtn.addEventListener('click', cerrarModal);

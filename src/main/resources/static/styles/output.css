@@ -991,15 +991,25 @@ video {
 
 /* Estilo del contenido dentro del modal */
 .modal-content {
-  background-color: white;
+  background-color: #8e1c1c;
   padding: 20px;
   border-radius: 5px;
   text-align: center;
 }
 
 /* Estilo para los botones */
-button {
+.buttonModal {
+  background-color: rgba(0, 0, 0, 0.57);
+
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
+}
+
+.animacion1 {
+  transition: transform 0.3s ease;
+}
+
+.animacion1:hover {
+  transform: scale(1.05); /* Escala un 5% al hacer hover */
 }
