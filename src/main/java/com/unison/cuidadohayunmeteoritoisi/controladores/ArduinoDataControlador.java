@@ -10,10 +10,13 @@ import com.unison.cuidadohayunmeteoritoisi.repositorios.ArduinoTemperaturaReposi
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class ArduinoDataControlador {
@@ -49,7 +52,7 @@ public class ArduinoDataControlador {
         }
     }
 
-    // Métodos para guardar datos de Arduino
+    // Metodo para guardar datos de Arduino
     @Scheduled(fixedRate = 5000)
     public void leerYGuardarDatos() {
         if (arPort == null || !arPort.isOpen()) {
@@ -76,7 +79,7 @@ public class ArduinoDataControlador {
 
                     // Verifica el formato de los datos
                     String[] valores = data.split(",");
-                    if (valores.length >= 3) { // Asegura que haya al menos tres valores (uno para cada sensor)
+                    if (valores.length >= 3) {
                         // Procesar datos de cada sensor
                         double proximidad = 0, humedad = 0, temperatura = 0;
                         boolean alarmaActiva = false, alarmaSonando = false;

@@ -20,8 +20,8 @@
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
 <body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
-
-
+<!-- Reproductor de audio en bucle -->
+<audio id="alarm-sound" th:src="@{/sounds/SonidoDeAlarma.mp3}" preload="auto" loop></audio>
 <!-- Contenedor principal de la página con diseño centrado -->
 <div class="items-center h-full">
     <div class="items-center h-full">
@@ -40,7 +40,7 @@
         </header>
 
         <!-- Modal -->
-        <div id="alerta" class="modal">
+        <div id="alerta" class="modal" onpointerover="encenderAlarma()">
             <div class="modal-content">
                 <h2 class="p-3 text-3xl">¡¡Alerta!!</h2>
                 <h2 class="p-4 text-1xl">¡La alarma de proximidad ha sido activada!</h2>
@@ -234,12 +234,24 @@
             }
 
             function mostrarModal() {
-                modal.style.display = 'flex';  // Muestra el modal
+                modal.style.display = 'flex'; // Muestra el modal
                 show_banner();
             }
 
+            // Función para reproducir el sonido en bucle cuando se activa la alarma
+            function encenderAlarma() {
+                var audio = document.getElementById('alarm-sound');
+                audio.play();  // Reproduce el sonido en bucle
+            }
+
+            function apagarAlarma(){
+                var audio = document.getElementById('alarm-sound');
+                audio.pause();  // Detiene la reproducción
+                audio.currentTime = 0;  // Vuelve al inicio del audio
+            }
+
             function cerrarModal() {
-                modal.style.display = 'none';  // Oculta el modal
+                modal.style.display = 'none'; // Oculta el modal
                 remove_banner();
             }
 
@@ -248,12 +260,16 @@
                 try {
                     const response = await fetch('/arduino/alarma/estado');
                     const data = await response.json();
-
+                    window.activa = Boolean(false);
                     // Comprueba si la alarma está activa
                     if (data && data.activa) { // Ajusta según el campo real de tu JSON
                         mostrarModal();
+                        window.activa = true;
+                        encenderAlarma();
                     }else{
                         cerrarModal();
+                        apagarAlarma();
+                        window.activa = false;
                     }
                 } catch (error) {
                     console.error('Error al obtener el estado de la alarma:', error);

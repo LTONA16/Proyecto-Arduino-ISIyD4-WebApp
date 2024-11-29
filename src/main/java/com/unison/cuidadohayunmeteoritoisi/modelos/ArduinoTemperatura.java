@@ -29,6 +29,10 @@ public class ArduinoTemperatura {
     @NotNull
     private LocalDateTime fecha;
 
+    public Long getId() {return id;}
+
+    public void setId(Long id) {this.id = id;}
+
     @NotNull
     public double getTemperatura() {
         return temperatura;

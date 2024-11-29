@@ -17,7 +17,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8" />
     <title>Humedad</title>
+
+    <style>
+        #tabla-humedad-container {
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid #1c1c1c;
+            padding: 8px;
+        }
+    </style>
 </head>
+
 
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
@@ -68,30 +78,34 @@
         <div class="p-6 relative flex flex-row items-center justify-between">
             <div>
                 <h1 class="py-2 font-semibold text-3xl">Humedad</h1>
-                <p class="text-light">Monitorea la humedad en tiempo real</p>
+                <p class="text-light">Monitorea la humedad por fechas</p>
             </div>
             <button class="bg-bkg-primary py-2 px-4 border-2 border-light-border rounded-xl w-fit h-fit" id="filter_button">
                 <i class="fa-regular fa-filter"></i>
                 <span>Filtros</span>
             </button>
-            <div class="absolute hidden -bottom-[52px] left-6 items-center" id="filters">
+
+            <!-- Contenedor de filtros -->
+            <div class="absolute hidden -bottom-[52px] left-6 items-center space-x-4" id="filters">
+                <!-- Fecha inicio -->
                 <div class="relative">
-                    <label for="date">Fecha: </label>
-                    <input type="date" name="date" id="date"
-                           class="mx-4 py-2 px-1 bg-transparent border border-light-border rounded-xl appearance-none" />
-                    <div class="absolute inset-y-0 left-[12.5rem] flex items-center pl-3 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20"
-                             fill="currentColor">
-                            <path
-                                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v11a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 00-2 0v1H7V3a1 1 0 00-1-1zM4 8h12v9H4V8z" />
-                        </svg>
-                    </div>
+                    <label for="fechaInicio">Fecha inicio: </label>
+                    <input type="date" id="fechaInicio" class="py-2 px-4 bg-transparent border border-light-border rounded-xl appearance-none" />
                 </div>
-                <button class="border border-light-border rounded-xl p-2">
+
+                <!-- Fecha fin -->
+                <div class="relative">
+                    <label for="fechaFin">Fecha fin: </label>
+                    <input type="date" id="fechaFin" class="py-2 px-4 bg-transparent border border-light-border rounded-xl appearance-none" />
+                </div>
+
+                <!-- Botón Aplicar -->
+                <button id="aplicar" class="bg-bkg-primary py-2 px-4 border-2 border-light-border rounded-xl w-fit h-fit">
                     Aplicar
                 </button>
             </div>
         </div>
+
 
         <!-- Sección de KPIs-->
         <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-8" id="KPIs">
@@ -101,7 +115,7 @@
                     <i class="fa-regular fa-droplet-percent"></i>
                 </div>
                 <p>Humedad Máx:</p>
-                <p>40%</p>
+                <p class="kpi-max"></p>
             </div>
 
             <!-- KPI Temp Min-->
@@ -110,7 +124,7 @@
                     <i class="fa-sharp fa-regular fa-droplet"></i>
                 </div>
                 <p>Humedad Mín:</p>
-                <p>20 %</p>
+                <p class="kpi-min"></p>
             </div>
 
             <!-- KPI Temp Promedio-->
@@ -119,7 +133,7 @@
                     <i class="fa-sharp fa-regular fa-badge-percent"></i>
                 </div>
                 <p>Humedad Promedio:</p>
-                <p>35%</p>
+                <p class="kpi-prom"></p>
             </div>
 
             <!-- KPI Desviación Estándar-->
@@ -128,108 +142,186 @@
                     <i class="fa-regular fa-calculator"></i>
                 </div>
                 <p>Desviación Estándar:</p>
-                <p>5%</p>
+                <p class="kpi-desviacion"></p>
             </div>
         </div>
 
         <!-- Contenedor de tabla y gráfica -->
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 h-full gap-x-8">
             <!-- Tabla -->
-            <div class="text-center overflow-hidden">
+            <div class="text-center">
                 <div class="grid grid-cols-2 border border-t-2 border-x-2 border-light-border rounded-t-2xl p-2 bg-bkg-light">
                     <span class="font-bold">Timestamp</span>
                     <span class="font-bold">Humedad</span>
                 </div>
-                <div id="tabla-humedad">
-                    <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
-                        <span>26/11/2024 12:00:00</span>
-                        <span>6%</span>
+                <!-- Contenedor de la tabla con scroll -->
+                <div id="tabla-humedad-container" class="overflow-y-auto max-h-64 border border-light-border">
+                    <div id="tabla-humedad">
+                        <!-- Filas de ejemplo -->
+                        <div class="grid grid-cols-2 border border-x-2 border-light-border p-2">
+                            <span>2020/11/6/11/12:00:00</span>
+                            <span>30%</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
+
             <!-- Gráfica -->
             <div class="bg-bkg-light rounded-2xl">
-                <canvas id="humedadChart" width="400" height="395"></canvas>
+                <canvas id="humedadChart" width="400" height="200"></canvas>
             </div>
         </div>
     </div>
+
     <footer>
         <script>
+            const fechaActual = obtenerFechaActual();
             const filters = document.getElementById("filters");
-            const date = document.getElementById("date");
             const filter_button = document.getElementById("filter_button");
             const KPIs = document.getElementById("KPIs");
             const banner = document.getElementById("banner");
             const close_banner = document.getElementById("close_banner");
             const closeModalBtn = document.getElementById('closeModalBtn');
             const modal = document.getElementById('alerta');
+            document.getElementById("fechaInicio").value = fechaActual;
+            document.getElementById("fechaFin").value = fechaActual;
+            let fechaInicio;
+            let fechaFin;
 
-            const ctx = document.getElementById('humedadChart').getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Humedad (%)',
-                            data: [],
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' }
-                    },
-                    scales: {
-                        x: { title: { display: true, text: 'Tiempo' } },
-                        y: { title: { display: true, text: 'Valores' }, beginAtZero: true }
-                    }
+            document.getElementById("aplicar").addEventListener("click", function () {
+                fechaInicio = document.getElementById("fechaInicio").value;
+                fechaFin = document.getElementById("fechaFin").value;
+
+                console.log("El boton ha sido clickeado")
+                console.log(fechaInicio)
+                console.log(fechaFin)
+
+                if (!fechaInicio || !fechaFin) {
+                    alert("Por favor, ingresa ambas fechas.");
+                    return;
                 }
+                filtrarDatosPorFechas(fechaInicio, fechaFin);
             });
 
-            async function fetchHumedadData() {
-                try {
-                    const response = await fetch('/arduino/humedad/datos');
-                    if (!response.ok) {
-                        throw new Error('Error al obtener los datos');
-                    }
-                    const data = await response.json();
-                    const tabla = document.getElementById('tabla-humedad');
-                    tabla.innerHTML = ''; // Limpiar contenido actual
 
-                    data.forEach((d) => {
-                        const fila = document.createElement('div');
-                        fila.className = 'grid grid-cols-2 border border-x-2 border-light-border p-2';
-                        fila.innerHTML = `
-                <span>${d.fecha}</span>
-                <span>${d.humedad}%</span>`;
-                        tabla.appendChild(fila);
+            function filtrarDatosPorFechas(fechaInicio, fechaFin) {
+                // Construye la URL con los parámetros
+                const url = `/arduino/humedad/filtrar?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+
+                // Hacer la solicitud HTTP al servidor con la fecha seleccionada
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json' // Encabezado para solicitar JSON
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();  // Procesa la respuesta JSON
+                    } else if (response.status === 204) {
+                        alert("No se encontraron datos para las fechas seleccionadas.");
+                    } else {
+                        throw new Error('Error al obtener datos');
+                    }
+                })
+                .then(datos => {
+                    // Aquí actualizas la tabla y la gráfica con los datos obtenidos
+                    actualizarTabla(datos);
+                    actualizarGrafica(datos);
+
+                    // Calcular los KPIs
+                    calcularKPIs(datos);
+                })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        alert("Hubo un problema al procesar la solicitud.");
                     });
-
-                    // Actualizar el gráfico
-                    const lastData = data[data.length - 1];
-                    const now = new Date().toLocaleTimeString();
-                    chart.data.labels.push(now);
-                    chart.data.datasets[0].data.push(lastData.humedad);
-
-                    if (chart.data.labels.length > 20) {
-                        chart.data.labels.shift();
-                        chart.data.datasets[0].data.shift();
-                    }
-
-                    chart.update();
-                } catch (error) {
-                    console.error('Error al obtener los datos:', error);
-                }
             }
 
-            fetchHumedadData();
-            setInterval(fetchHumedadData, 5000);
+            function calcularKPIs(datos) {
+                // Extraer las humedades
+                const humedades = datos.map(dato => dato.humedad);
+
+                // Calcular temperatura máxima, mínima y promedio
+                const tempMax = Math.max(...humedades);
+                const tempMin = Math.min(...humedades);
+                const tempPromedio = humedades.reduce((acc, val) => acc + val, 0) / humedades.length;
+
+                // Calcular desviación estándar
+                const media = tempPromedio;
+                const varianza = humedades.reduce((acc, val) => acc + Math.pow(val - media, 2), 0) / humedades.length;
+                const desviacionEstandar = Math.sqrt(varianza);
+
+                // Actualizar los valores de los KPIs en el DOM
+                document.querySelector('#KPIs .flex:nth-child(1) p:last-child').textContent = `${tempMax}%`;
+                document.querySelector('#KPIs .flex:nth-child(2) p:last-child').textContent = `${tempMin}%`;
+                document.querySelector('#KPIs .flex:nth-child(3) p:last-child').textContent = `${tempPromedio.toFixed(2)}%`;
+                document.querySelector('#KPIs .flex:nth-child(4) p:last-child').textContent = `${desviacionEstandar.toFixed(2)}%`;
+            }
+
+            function actualizarTabla(datos) {
+                const tabla = document.getElementById("tabla-humedad");
+                tabla.innerHTML = ""; // Limpiar la tabla
+
+                // Crear filas de la tabla con los datos
+                datos.forEach(dato => {
+                    const fila = document.createElement("div");
+                    fila.className = "grid grid-cols-2 border border-x-2 border-light-border p-2";
+
+                    const timestamp = document.createElement("span");
+                    timestamp.textContent = dato.fecha;
+
+                    const humedad = document.createElement("span");
+                    humedad.textContent = dato.humedad + "%";
+
+                    fila.appendChild(timestamp);
+                    fila.appendChild(humedad);
+                    tabla.appendChild(fila);
+                });
+            }
+
+            function actualizarGrafica(datos) {
+                let ctx = document.getElementById("humedadChart").getContext("2d");
+
+                // Verificar si ya existe un gráfico y destruirlo
+                if (window.chart) {
+                    window.chart.destroy();
+                }
+
+                // Datos de la gráfica
+                const labels = datos.map(dato => dato.fecha); // Labels de las fechas
+                const humedadData = datos.map(dato => dato.humedad); // Datos de humedad
+
+                // Configuración de la gráfica
+                window.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Humedad (%)',
+                            data: humedadData,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            function obtenerFechaActual() {
+                const hoy = new Date();
+                const año = hoy.getFullYear();
+                const mes = String(hoy.getMonth() + 1).padStart(2, '0'); // Mes (0-11)
+                const día = String(hoy.getDate()).padStart(2, '0'); // Día (1-31)
+                return `${año}-${mes}-${día}`;
+            }
 
             function toggle() {
                 if (filters.classList.contains("hidden")) {
@@ -244,11 +336,6 @@
                     KPIs.classList.add("pt-8");
                 }
             }
-
-            // Banners y modales
-            window.onload = function () {
-                verificarAlarma(); // Ejecutar la verificación al cargar la página
-            };
 
             function remove_banner() {
                 banner.classList.remove("flex");
@@ -276,8 +363,8 @@
                     const response = await fetch('/arduino/alarma/estado');
                     const data = await response.json();
 
-                    // Comprueba si la alarma está activa
-                    if (data && data.activa) { // Ajusta según el campo real de tu JSON
+                    // Comprobar si la alarma está activa
+                    if (data && data.activa) {
                         mostrarModal();
                     }else{
                         cerrarModal();
@@ -287,6 +374,7 @@
                 }
             }
 
+            filtrarDatosPorFechas(fechaActual, fechaActual);
             verificarAlarma();
             setInterval(verificarAlarma, 5000);
 
