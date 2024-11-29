@@ -20,14 +20,8 @@
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
 <body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
-<!-- Modal -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <h2 class="p-3 text-4xl">¡¡Alerta!!</h2>
-        <h2 class="p-4 text-2xl">¡La alarma de proximidad ha sido activada!</h2>
-        <button id="closeModalBtn" class="rounded-2xl buttonModal animacion1">Cerrar Modal</button>
-    </div>
-</div>
+
+
 <!-- Contenedor principal de la página con diseño centrado -->
 <div class="items-center h-full">
     <div class="items-center h-full">
@@ -45,10 +39,18 @@
             </div>
         </header>
 
+        <!-- Modal -->
+        <div id="alerta" class="modal">
+            <div class="modal-content">
+                <h2 class="p-3 text-3xl">¡¡Alerta!!</h2>
+                <h2 class="p-4 text-1xl">¡La alarma de proximidad ha sido activada!</h2>
+                <button id="closeModalBtn" class="rounded-2xl buttonModal animacion1">Cerrar Modal</button>
+            </div>
+        </div>
+
         <!-- Banner -->
-        <div class="bg-bkg-light p-4 mt-6 mb-0 mx-6 rounded-xl justify-between border-l-4 border-bkg-red flex"
-             id="banner">
-            <div class="flex items-center space-x-4">
+        <div id="banner" class="hidden bg-bkg-light p-4 mt-6 mb-0 mx-6 rounded-xl justify-between border-l-4 border-bkg-red flex">
+        <div class="flex items-center space-x-4">
                 <i class="fa-solid fa-circle-exclamation text-bkg-red text-2xl"></i>
                 <div>
                     <h2 class="text-bkg-red text-lg font-semibold">Alerta</h2>
@@ -107,7 +109,7 @@
             const banner = document.getElementById("banner");
             const close_banner = document.getElementById("close_banner");
             const closeModalBtn = document.getElementById('closeModalBtn');
-            const modal = document.getElementById('modal');
+            const modal = document.getElementById('alerta');
 
             // Gráficas de temperatura y humedad
             const ctxHumedad = document.getElementById('humedadChart').getContext('2d');
@@ -218,7 +220,7 @@
             }
 
             fetchTemperaturaData();
-            setInterval(fetchTemperaturaData, 2000);
+            setInterval(fetchTemperaturaData, 5000);
 
             // Banners y modales
             function remove_banner() {

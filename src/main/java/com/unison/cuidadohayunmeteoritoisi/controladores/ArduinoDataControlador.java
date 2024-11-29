@@ -85,7 +85,7 @@ public class ArduinoDataControlador {
                             // Procesar los datos de la alarma (proximidad)
                             if (valores.length >= 3 && !valores[2].equals("Error")) {
                                 proximidad = Double.parseDouble(valores[2].trim());
-                                alarmaActiva = proximidad > 0 && proximidad <= 60;
+                                alarmaActiva = proximidad > 0 && proximidad <= 30;
                                 alarmaSonando = alarmaActiva;
                             }
 

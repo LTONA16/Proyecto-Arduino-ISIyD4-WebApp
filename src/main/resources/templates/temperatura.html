@@ -20,14 +20,7 @@
 <!-- Agregamos padding al body y declaramos la fuente del texto -->
 
 <body class="bg-bkg-primary text-white h-fit" style="font-family: Poppins">
-<!-- Modal -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <h2 class="p-3 text-4xl">¡¡Alerta!!</h2>
-    <h2 class="p-4 text-2xl">¡La alarma de proximidad ha sido activada!</h2>
-    <button id="closeModalBtn" class="rounded-2xl buttonModal animacion1">Cerrar Modal</button>
-  </div>
-</div>
+
 <!-- Contenedor principal de la página con diseño centrado -->
 <div class="items-center h-full">
   <div class="items-center h-full">
@@ -45,8 +38,17 @@
       </div>
     </header>
 
+    <!-- Modal -->
+    <div id="alerta" class="modal">
+      <div class="modal-content">
+        <h2 class="p-3 text-3xl">¡¡Alerta!!</h2>
+        <h2 class="p-4 text-1xl">¡La alarma de proximidad ha sido activada!</h2>
+        <button id="closeModalBtn" class="rounded-2xl buttonModal animacion1">Cerrar Modal</button>
+      </div>
+    </div>
+
     <!-- Banner -->
-    <div class="bg-bkg-light p-4 mt-6 mb-0 mx-6 rounded-xl justify-between border-l-4 border-bkg-red flex" id="banner">
+    <div id="banner" class="hidden bg-bkg-light p-4 mt-6 mb-0 mx-6 rounded-xl justify-between border-l-4 border-bkg-red flex">
       <div class="flex items-center space-x-4">
         <i class="fa-solid fa-circle-exclamation text-bkg-red text-2xl"></i>
         <div>
@@ -159,7 +161,7 @@
       const banner = document.getElementById("banner");
       const close_banner = document.getElementById("close_banner");
       const closeModalBtn = document.getElementById('closeModalBtn');
-      const modal = document.getElementById('modal');
+      const modal = document.getElementById('alerta');
 
       const ctx = document.getElementById('temperaturaChart').getContext('2d');
       const chart = new Chart(ctx, {
@@ -247,6 +249,10 @@
       }
 
       // Banners y modales
+      window.onload = function () {
+        verificarAlarma(); // Ejecutar la verificación al cargar la página
+      };
+
       function remove_banner() {
         banner.classList.remove("flex");
         banner.classList.add("hidden");
